@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -31,7 +32,9 @@ func parseNums(strNum string) int {
 
 // Take in all the data from the CSV and parse it.
 func readInFileData(probMap map[string]int) {
-	file, err := os.Open("problems.csv")
+	var csvFileName *string = flag.String("csv", "problems.csv", "Please provide a valid CSV file in the format: 'Question, Answer', where Answers are numeric (intger) values")
+
+	file, err := os.Open(*csvFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +55,7 @@ func readInFileData(probMap map[string]int) {
 
 // runs the actual game loops through questions while the total score is lower than 10
 func displayQuestions(probMap map[string]int, correctCount *int) {
-	var timerDuration time.Duration = 4 * time.Second
+	var timerDuration time.Duration = 10 * time.Second
 	var timer *time.Timer = time.NewTimer(timerDuration)
 	var stop = make(chan bool)
 	go func() {
