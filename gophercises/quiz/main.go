@@ -5,30 +5,28 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
-var problemMap map[string]int = map[string]int{}
+var problemMap map[string]string = map[string]string{}
 
 // Insert everything into the map the Q's as strings; answers as Numbers
-func insertQuestions(probMap map[string]int, data []string) {
+func insertQuestions(probMap map[string]string, data []string) {
 	var sum, answer string = data[0], data[1]
-	var number int = parseNums(answer)
-	probMap[sum] = number
+	// var number int = parseNums(answer)
+	probMap[sum] = answer
 }
 
 // convert string number to int types
-func parseNums(strNum string) int {
-	num, err := strconv.Atoi(strNum)
-	if err != nil {
-		fmt.Printf("Error converting string %v to number\n", strNum)
-		fmt.Println(err)
-	}
-	return num
-}
+// func parseNums(strNum string) int {
+// 	num, err := strconv.Atoi(strNum)
+// 	if err != nil {
+// 		fmt.Printf("Error converting string %v to number\n", strNum)
+// 		fmt.Println(err)
+// 	}
+// 	return num
+// }
 
 func exit(msg string, code int) {
 	fmt.Println((msg))
@@ -36,7 +34,7 @@ func exit(msg string, code int) {
 }
 
 // Take in all the data from the CSV and parse it.
-func readInFileData(probMap map[string]int) {
+func readInFileData(probMap map[string]string) {
 	var csvFileName *string = flag.String("csv", "problems.csv", "Please provide a valid CSV file in the format: 'Question, Answer', where Answers are numeric (intger) values")
 	flag.Parse()
 
@@ -53,7 +51,7 @@ func readInFileData(probMap map[string]int) {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			exit("Data could not be parsed from the fild", 1)
 		}
 		insertQuestions(probMap, data)
 	}
@@ -61,7 +59,7 @@ func readInFileData(probMap map[string]int) {
 }
 
 // runs the actual game loops through questions while the total score is lower than 10
-func displayQuestions(probMap map[string]int, correctCount *int) {
+func displayQuestions(probMap map[string]string, correctCount *int) {
 	var timerDuration time.Duration = 10 * time.Second
 	var timer *time.Timer = time.NewTimer(timerDuration)
 	var stop = make(chan bool)
@@ -74,7 +72,7 @@ func displayQuestions(probMap map[string]int, correctCount *int) {
 	}()
 
 	for k, answer := range probMap {
-		var userVal int
+		var userVal string
 		fmt.Printf("What does %v equal?\n", k)
 		_, err := fmt.Scanln(&userVal)
 		if err != nil {
