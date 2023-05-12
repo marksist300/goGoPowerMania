@@ -30,13 +30,20 @@ func parseNums(strNum string) int {
 	return num
 }
 
+func exit(msg string, code int) {
+	fmt.Println((msg))
+	os.Exit(code)
+}
+
 // Take in all the data from the CSV and parse it.
 func readInFileData(probMap map[string]int) {
 	var csvFileName *string = flag.String("csv", "problems.csv", "Please provide a valid CSV file in the format: 'Question, Answer', where Answers are numeric (intger) values")
+	flag.Parse()
 
 	file, err := os.Open(*csvFileName)
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
+		exit(fmt.Sprintf("Failed to open file: %v", *csvFileName), 1)
 	}
 	defer file.Close()
 	csvRead := csv.NewReader(file)
@@ -63,7 +70,7 @@ func displayQuestions(probMap map[string]int, correctCount *int) {
 		fmt.Println("Time's up!")
 		fmt.Printf("Your score was %v\n", *correctCount)
 		close(stop)
-		os.Exit(0)
+		exit("Game over", 0)
 	}()
 
 	for k, answer := range probMap {
@@ -91,7 +98,7 @@ func displayQuestions(probMap map[string]int, correctCount *int) {
 		default:
 		}
 	}
-	return
+	exit("Game over", 0)
 }
 
 func main() {
