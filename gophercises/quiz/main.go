@@ -35,7 +35,7 @@ func exit(msg string, code int) {
 
 // Take in all the data from the CSV and parse it.
 func readInFileData(probMap map[string]string) {
-	var csvFileName *string = flag.String("csv", "problems.csv", "Please provide a valid CSV file in the format: 'Question, Answer', where Answers are numeric (intger) values")
+	var csvFileName *string = flag.String("csv", "problems.csv", "Please provide a valid CSV file in the format: 'Question, Answer'")
 	flag.Parse()
 
 	file, err := os.Open(*csvFileName)
@@ -59,22 +59,22 @@ func readInFileData(probMap map[string]string) {
 }
 
 // runs the actual game loops through questions while the total score is lower than 10
-func displayQuestions(probMap map[string]string, correctCount *int) {
+func displayQuestions(probMap map[string]string, correctCount, questionsAttempted *int) {
 	var timerDuration time.Duration = 10 * time.Second
 	var timer *time.Timer = time.NewTimer(timerDuration)
 	var stop = make(chan bool)
 	go func() {
 		<-timer.C
 		fmt.Println("Time's up!")
-		fmt.Printf("Your score was %v\n", *correctCount)
 		close(stop)
-		exit("Game over", 0)
+		exit(fmt.Sprintf("You score was %d out of %d correct", *correctCount, *questionsAttempted), 0)
 	}()
 
 	for k, answer := range probMap {
 		var userVal string
 		fmt.Printf("What does %v equal?\n", k)
 		_, err := fmt.Scanln(&userVal)
+		*questionsAttempted++
 		if err != nil {
 			fmt.Println("Invalid Input, input must be a number", err)
 			return
@@ -86,7 +86,6 @@ func displayQuestions(probMap map[string]string, correctCount *int) {
 		if *correctCount >= 10 {
 			stop <- true
 			timer.Stop()
-			fmt.Printf("Well done you got %v answers correct!\n", *correctCount)
 			break
 		}
 
@@ -96,11 +95,12 @@ func displayQuestions(probMap map[string]string, correctCount *int) {
 		default:
 		}
 	}
-	exit("Game over", 0)
+	exit(fmt.Sprintf("You got %d out of %d correct", *correctCount, *questionsAttempted), 0)
 }
 
 func main() {
 	var correctAnswers int
+	var questionsAttempted int
 	readInFileData(problemMap)
-	displayQuestions(problemMap, &correctAnswers)
+	displayQuestions(problemMap, &correctAnswers, &questionsAttempted)
 }
