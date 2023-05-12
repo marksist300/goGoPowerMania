@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 var problemMap map[string]int = map[string]int{}
@@ -46,9 +47,22 @@ func readInFileData(probMap map[string]int) {
 		}
 		insertQuestions(probMap, data)
 	}
+	return
 }
 
+// runs the actual game loops through questions while the total score is lower than 10
 func displayQuestions(probMap map[string]int, correctCount *int) {
+	var timerDuration time.Duration = 4 * time.Second
+	var timer *time.Timer = time.NewTimer(timerDuration)
+	var stop = make(chan bool)
+	go func() {
+		<-timer.C
+		fmt.Println("Time's up!")
+		fmt.Printf("Your score was %v\n", *correctCount)
+		close(stop)
+		os.Exit(0)
+	}()
+
 	for k, answer := range probMap {
 		var userVal int
 		fmt.Printf("What does %v equal?\n", k)
@@ -62,15 +76,23 @@ func displayQuestions(probMap map[string]int, correctCount *int) {
 		}
 
 		if *correctCount >= 10 {
-			fmt.Printf("Well done you got %v answers correct!", *correctCount)
+			stop <- true
+			timer.Stop()
+			fmt.Printf("Well done you got %v answers correct!\n", *correctCount)
 			break
 		}
+
+		select {
+		case <-stop:
+			break
+		default:
+		}
 	}
+	return
 }
 
 func main() {
 	var correctAnswers int
 	readInFileData(problemMap)
 	displayQuestions(problemMap, &correctAnswers)
-	fmt.Println("*** End of File ***")
 }
